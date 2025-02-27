@@ -1,8 +1,8 @@
 package com.example.demo.services
 
-import com.example.demo.bot.Bot
-import com.example.demo.entity.ChatMember
-import com.example.demo.entity.Habit
+import com.example.demo.ChatMember
+import com.example.demo.Habit
+import com.example.demo.bot.TelegramBot
 import com.example.demo.services.UserState.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -19,8 +19,8 @@ import java.util.stream.Collectors
 
 @Component
 class MessageHandler @Autowired constructor(
-    private val chatMemberService: ChatMemberService,
-    private val bot: Bot,
+    private val telegramBot: TelegramBot,
+    private val jdbcOperationsService: JdbcOperationsService,
 ) : Thread() {
 
     companion object {
@@ -31,10 +31,10 @@ class MessageHandler @Autowired constructor(
 
     override fun run() {
         while (true) {
-            if (!bot.receivedMessages.isEmpty()) {
+            if (!telegramBot.receivedMessages.isEmpty()) {
                 val thread = Thread {
-                    while (!bot.receivedMessages.isEmpty()) {
-                        processMessage(bot.receivedMessages.poll())
+                    while (!telegramBot.receivedMessages.isEmpty()) {
+                        processMessage(telegramBot.receivedMessages.poll())
                     }
                 }
                 thread.start()
@@ -67,7 +67,7 @@ class MessageHandler @Autowired constructor(
                 info("\n")
             }
 
-            if (chatMemberService.exist(userId)) {
+            if (jdbcOperationsService.exist(userId)) {
                 saveUserInfo(userId)
             }
 
@@ -125,7 +125,7 @@ class MessageHandler @Autowired constructor(
             info("\n")
         }
 
-        if (chatMemberService.exist(userId)) {
+        if (jdbcOperationsService.exist(userId)) {
             saveUserInfo(userId)
         }
 
@@ -183,7 +183,7 @@ class MessageHandler @Autowired constructor(
             info("\n")
         }
 
-        if (chatMemberService.exist(userId)) {
+        if (jdbcOperationsService.exist(userId)) {
             saveUserInfo(userId)
         }
 
@@ -228,7 +228,7 @@ class MessageHandler @Autowired constructor(
             Привычка с данным названием будет удалена
         """
 
-        bot.execute(responseMessage)
+        telegramBot.execute(responseMessage)
         sendHabits(requestMessage)
     }
 
@@ -242,7 +242,7 @@ class MessageHandler @Autowired constructor(
             Теперь отправьте описание привычки
         """
 
-        bot.execute(responseMessage)
+        telegramBot.execute(responseMessage)
     }
 
     private fun parseHabitDescription(requestMessage: Message) {
@@ -257,36 +257,36 @@ class MessageHandler @Autowired constructor(
             СЕК МИН ЧАС МЕС ГОД ДЕНЬ_НЕДЕЛИ
         """
 
-        bot.execute(responseMessage)
+        telegramBot.execute(responseMessage)
     }
 
     private fun parseHabitNotificationCron(requestMessage: Message) {
         userStates[requestMessage.chatId]?.notifictaionCron = requestMessage.text
         userStates[requestMessage.chatId]?.userState = UNNECESSARY
 
-        chatMemberService.addHabit(requestMessage.chatId, userStates[requestMessage.chatId])
+        jdbcOperationsService.addHabit(requestMessage.chatId, userStates[requestMessage.chatId])
 
         val responseMessage = SendMessage()
         responseMessage.setChatId(requestMessage.chatId)
         responseMessage.text = "Привычка сохранена"
 
-        bot.execute(responseMessage)
+        telegramBot.execute(responseMessage)
     }
 
     private fun parseHabitName(requestMessage: Message) {
         val habitName = requestMessage.text
-        chatMemberService.deleteHabitByName(requestMessage.chatId, habitName)
+        jdbcOperationsService.deleteHabitByName(requestMessage.chatId, habitName)
 
         val responseMessage = SendMessage()
         responseMessage.setChatId(requestMessage.chatId)
         responseMessage.text = "Привычка удалена"
 
-        bot.execute(responseMessage)
+        telegramBot.execute(responseMessage)
     }
 
     private fun saveUserInfo(id: Long) {
         val chatMember = ChatMember(id)
-        chatMemberService.save(chatMember)
+        jdbcOperationsService.save(chatMember)
     }
 
     private fun sendMessage(userId: Long, messageText: String) {
@@ -294,20 +294,20 @@ class MessageHandler @Autowired constructor(
         responseMessage.setChatId(userId)
         responseMessage.text = messageText
 
-        bot.execute(responseMessage)
+        telegramBot.execute(responseMessage)
     }
 
 
 
     private fun sendHabits(requestMessage: Message) {
-        val habits = chatMemberService.getChatMemberHabits(requestMessage.chatId)
+        val habits = jdbcOperationsService.getChatMemberHabits(requestMessage.chatId)
         val habitsTextView = habits.stream().map { obj: Habit -> obj.toString() }.collect(Collectors.joining("\n"))
 
         val responseMessage = SendMessage()
         responseMessage.setChatId(requestMessage.chatId)
         responseMessage.text = habitsTextView
 
-        bot.execute(responseMessage)
+        telegramBot.execute(responseMessage)
     }
 
     private fun sendHabitAdditionForm(requestMessage: Message) {
@@ -319,7 +319,7 @@ class MessageHandler @Autowired constructor(
             В данном сообщении отправтье только название привычки
         """
 
-        bot.execute(responseMessage)
+        telegramBot.execute(responseMessage)
     }
 
     private fun sendStartMessage(requestMessage: Message) {
@@ -337,7 +337,7 @@ class MessageHandler @Autowired constructor(
             )
         ).build()
 
-        bot.execute(responseMessage)
+        telegramBot.execute(responseMessage)
     }
 
     private fun sendHelpMessage(requestMessage: Message) {
@@ -367,7 +367,7 @@ class MessageHandler @Autowired constructor(
             )
         ).build()
 
-        bot.execute(responseMessage)
+        telegramBot.execute(responseMessage)
     }
 
     private fun sendMenuMessage(requestMessage: Message) {
@@ -411,7 +411,7 @@ class MessageHandler @Autowired constructor(
             )
         ).build()
 
-        bot.execute(responseMessage)
+        telegramBot.execute(responseMessage)
     }
 
     private fun handleLikeEcho(requestMessage: Message) {
@@ -419,6 +419,6 @@ class MessageHandler @Autowired constructor(
         reponseMessage.setChatId(requestMessage.chatId)
         reponseMessage.text = requestMessage.text
 
-        bot.execute(reponseMessage)
+        telegramBot.execute(reponseMessage)
     }
 }

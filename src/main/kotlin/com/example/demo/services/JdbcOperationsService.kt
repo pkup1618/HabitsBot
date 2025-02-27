@@ -1,7 +1,7 @@
 package com.example.demo.services
 
-import com.example.demo.entity.ChatMember
-import com.example.demo.entity.Habit
+import com.example.demo.ChatMember
+import com.example.demo.Habit
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Service
@@ -9,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional
 
 
 @Service
-class ChatMemberService @Autowired constructor(
+class JdbcOperationsService @Autowired constructor(
     private val jdbcTemplate: JdbcTemplate
 ) {
     @Transactional
@@ -40,8 +40,7 @@ class ChatMemberService @Autowired constructor(
             WHERE chat_member_id = $id
         """
 
-        val habits: List<Habit> = jdbcTemplate.query(prettySql)
-        { rs, _ ->
+        val habits: List<Habit> = jdbcTemplate.query(prettySql) { rs, _ ->
             Habit(
                 rs.getLong("id"),
                 rs.getLong("chat_member_id"),
@@ -60,8 +59,7 @@ class ChatMemberService @Autowired constructor(
             WHERE notification_cron IS NOT NULL
         """
 
-        val habits: List<Habit> = jdbcTemplate.query(prettySql)
-        { rs, _ ->
+        val habits: List<Habit> = jdbcTemplate.query(prettySql) { rs, _ ->
             Habit(
                 rs.getLong("id"),
                 rs.getLong("chat_member_id"),
@@ -88,7 +86,7 @@ class ChatMemberService @Autowired constructor(
         jdbcTemplate.update(prettySql)
     }
 
-    fun deleteHabitByName(id: Long?, name: String?) {
+    fun deleteHabitByName(id: Long, name: String) {
         val prettySql = """
             DELETE FROM habit
             WHERE chat_member_id = $id AND name = '$name'

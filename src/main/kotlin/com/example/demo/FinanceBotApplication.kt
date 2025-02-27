@@ -6,10 +6,13 @@ import org.springframework.boot.runApplication
 import org.springframework.context.ConfigurableApplicationContext
 
 @SpringBootApplication
-class FinanceBotApplication
+class FinanceBotApplication {
+
+}
 
 fun main(args: Array<String>) {
     val ctx: ConfigurableApplicationContext = runApplication<FinanceBotApplication>(*args)
     val messageHandler: MessageHandler = ctx.getBean("messageHandler", MessageHandler::class.java)
+
     messageHandler.start()
 }

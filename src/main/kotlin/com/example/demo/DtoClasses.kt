@@ -1,4 +1,8 @@
-package com.example.demo.entity
+package com.example.demo
+
+data class ChatMember(
+    val id: Long
+)
 
 data class Habit(
     val id: Long,
