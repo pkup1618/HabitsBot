@@ -1,4 +1,4 @@
-package com.example.demo.services
+package app.services
 
 class UserStateContainer {
     var userState: UserState = UserState.UNNECESSARY

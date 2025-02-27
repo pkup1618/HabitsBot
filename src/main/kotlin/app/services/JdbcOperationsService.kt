@@ -1,7 +1,7 @@
-package com.example.demo.services
+package app.services
 
-import com.example.demo.ChatMember
-import com.example.demo.Habit
+import app.ChatMember
+import app.Habit
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Service

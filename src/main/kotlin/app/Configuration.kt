@@ -1,6 +1,6 @@
-package com.example.demo.bot
+package app
 
-import com.example.demo.services.PropertiesService
+import app.services.PropertiesService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.jdbc.DataSourceBuilder
 import org.springframework.context.annotation.Bean
@@ -19,7 +19,12 @@ import javax.sql.DataSource
 @Configuration
 open class BotConfig @Autowired constructor(
     private val propertiesService: PropertiesService,
+    private val telegramBotsApi: TelegramBotsApi,
 ) {
+    init {
+        telegramBotsApi.registerBot(telegramBot())
+    }
+
     @Bean
     open fun defaultBotSession(): TelegramBotsApi {
         return TelegramBotsApi(DefaultBotSession::class.java)
@@ -61,10 +66,10 @@ class TelegramBot(
     botOptions: DefaultBotOptions,
     botToken: String,
 ) : TelegramLongPollingBot(botOptions, botToken) {
-    val receivedMessages: Queue<Update> = ConcurrentLinkedQueue()
+    val receivedUpdates: Queue<Update> = ConcurrentLinkedQueue()
 
     override fun onUpdateReceived(update: Update) {
-        receivedMessages.add(update)
+        receivedUpdates.add(update)
     }
 
     override fun getBotUsername(): String = "Презентационный бот"

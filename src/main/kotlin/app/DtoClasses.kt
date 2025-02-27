@@ -1,4 +1,4 @@
-package com.example.demo
+package app
 
 data class ChatMember(
     val id: Long

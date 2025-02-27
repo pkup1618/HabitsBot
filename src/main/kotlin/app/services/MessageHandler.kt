@@ -1,9 +1,9 @@
-package com.example.demo.services
+package app.services
 
-import com.example.demo.ChatMember
-import com.example.demo.Habit
-import com.example.demo.bot.TelegramBot
-import com.example.demo.services.UserState.*
+import app.ChatMember
+import app.Habit
+import app.TelegramBot
+import app.services.UserState.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -22,28 +22,16 @@ class MessageHandler @Autowired constructor(
     private val telegramBot: TelegramBot,
     private val jdbcOperationsService: JdbcOperationsService,
 ) : Thread() {
-
-    companion object {
-        private val log: Logger = LoggerFactory.getLogger(MessageHandler::class.java)
-    }
-
+    private val log: Logger = LoggerFactory.getLogger(MessageHandler::class.java)
     private val userStates: MutableMap<Long, UserStateContainer> = ConcurrentHashMap()
 
     override fun run() {
         while (true) {
-            if (!telegramBot.receivedMessages.isEmpty()) {
-                val thread = Thread {
-                    while (!telegramBot.receivedMessages.isEmpty()) {
-                        processMessage(telegramBot.receivedMessages.poll())
-                    }
-                }
+            if (telegramBot.receivedUpdates.isNotEmpty()) {
+                val thread = Thread { processMessage(telegramBot.receivedUpdates.poll()) }
                 thread.start()
 
-                try {
-                    sleep(500)
-                } catch (e: InterruptedException) {
-                    e.printStackTrace()
-                }
+                sleep(500)
             }
         }
     }
@@ -194,29 +182,23 @@ class MessageHandler @Autowired constructor(
                 handleLikeEcho(requestMessage)
                 userStates[userId]?.changeState(UNNECESSARY)
             }
-
             ADDING_HABIT_HEADER -> {
                 parseHabitHeader(requestMessage)
                 userStates[userId]?.changeState(ADDING_HABIT_BODY)
             }
-
             ADDING_HABIT_BODY -> {
                 parseHabitDescription(requestMessage)
                 userStates[userId]?.changeState(ADDING_HABIT_NOTIFICATION_CRON)
             }
-
             ADDING_HABIT_NOTIFICATION_CRON -> {
                 parseHabitNotificationCron(requestMessage)
                 userStates[userId]?.changeState(UNNECESSARY)
             }
-
             DELETING_HABIT -> {
                 parseHabitName(requestMessage)
                 userStates[userId]?.changeState(UNNECESSARY)
             }
-
             null -> TODO()
-
         }
     }
 
@@ -372,6 +354,7 @@ class MessageHandler @Autowired constructor(
 
     private fun sendMenuMessage(requestMessage: Message) {
         val responseMessage = SendMessage()
+
         responseMessage.setChatId(requestMessage.chatId)
         responseMessage.text = "Выберите пункт меню"
         responseMessage.replyMarkup = InlineKeyboardMarkup.builder().keyboard(

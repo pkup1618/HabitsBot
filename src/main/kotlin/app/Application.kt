@@ -1,6 +1,6 @@
-package com.example.demo
+package app
 
-import com.example.demo.services.MessageHandler
+import app.services.MessageHandler
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.context.ConfigurableApplicationContext

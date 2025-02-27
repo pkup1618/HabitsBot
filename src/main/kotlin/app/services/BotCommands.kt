@@ -1,4 +1,4 @@
-package com.example.demo.services
+package app.services
 
 enum class BotCommands(val command: String) {
     START("/start"),

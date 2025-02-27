@@ -1,7 +1,7 @@
-package com.example.demo.services
+package app.services
 
-import com.example.demo.bot.TelegramBot
-import com.example.demo.entity.Habit
+import app.Habit
+import app.TelegramBot
 import jakarta.annotation.PostConstruct
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler
@@ -9,6 +9,7 @@ import org.springframework.scheduling.support.CronTrigger
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 
+//todo можно переделать через спринговый создатель тасков
 
 @Component
 class NotificationSender @Autowired constructor(
@@ -17,7 +18,7 @@ class NotificationSender @Autowired constructor(
     private val telegramBot: TelegramBot
 ) {
     @PostConstruct
-    fun ex() {
+    fun initiateScheduling() {
         val habitsForSchedule: List<Habit> = jdbcOperationsService.getAllTrackingHabits()
 
         for (habit in habitsForSchedule) {
@@ -29,11 +30,16 @@ class NotificationSender @Autowired constructor(
     }
 }
 
-class MessagePrinterTask(val telegramBot: TelegramBot, val habit: Habit) : Runnable {
+class MessagePrinterTask(
+    private val telegramBot: TelegramBot,
+    private val habit: Habit
+) : Runnable {
     override fun run() {
         val notification = SendMessage()
+
         notification.setChatId(habit.chatMemberId)
         notification.text = habit.toString()
+
         telegramBot.execute(notification)
     }
 }
