@@ -6,9 +6,7 @@ import org.springframework.boot.runApplication
 import org.springframework.context.ConfigurableApplicationContext
 
 @SpringBootApplication
-class FinanceBotApplication {
-
-}
+open class FinanceBotApplication
 
 fun main(args: Array<String>) {
     val ctx: ConfigurableApplicationContext = runApplication<FinanceBotApplication>(*args)

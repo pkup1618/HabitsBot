@@ -1,4 +1,4 @@
-package app.services
+package app
 
 enum class BotCommands(val command: String) {
     START("/start"),
@@ -13,4 +13,12 @@ enum class BotCommands(val command: String) {
     NOTIFICATIONS("/notifications"),
     NOTIFICATIONS_ENABLE("/notifications_enable"),
     NOTIFICATIONS_DISABLE("/notifications_disable"),
+}
+
+enum class UserState {
+    UNNECESSARY,
+    ADDING_HABIT_HEADER,
+    ADDING_HABIT_BODY,
+    ADDING_HABIT_NOTIFICATION_CRON,
+    DELETING_HABIT
 }

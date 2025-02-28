@@ -1,6 +1,6 @@
 package app
 
-import app.services.PropertiesService
+import app.services.PropertiesProvider
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.jdbc.DataSourceBuilder
 import org.springframework.context.annotation.Bean
@@ -17,29 +17,27 @@ import javax.sql.DataSource
 
 
 @Configuration
-open class BotConfig @Autowired constructor(
-    private val propertiesService: PropertiesService,
-    private val telegramBotsApi: TelegramBotsApi,
+open class BotConfig(
+    private val propertiesProvider: PropertiesProvider,
 ) {
-    init {
-        telegramBotsApi.registerBot(telegramBot())
-    }
-
     @Bean
     open fun defaultBotSession(): TelegramBotsApi {
-        return TelegramBotsApi(DefaultBotSession::class.java)
+        val telegramBotsApi = TelegramBotsApi(DefaultBotSession::class.java)
+        telegramBotsApi.registerBot(telegramBot())
+
+        return telegramBotsApi
     }
 
     @Bean
     open fun telegramBot(): TelegramBot {
         return TelegramBot(
             DefaultBotOptions(),
-            propertiesService.loadTelegramBotProps().getProperty("token")
+            propertiesProvider.loadTelegramBotProps().getProperty("token")
         )
     }
 
     @Bean
-    fun threadPoolTaskScheduler(): ThreadPoolTaskScheduler {
+    open fun threadPoolTaskScheduler(): ThreadPoolTaskScheduler {
         val threadPoolTaskScheduler = ThreadPoolTaskScheduler()
 
         threadPoolTaskScheduler.poolSize = 5
@@ -50,7 +48,7 @@ open class BotConfig @Autowired constructor(
 
     @Bean
     open fun modelDataSource(): DataSource {
-        val dbConnectionInfo = propertiesService.loadDatabaseProps()
+        val dbConnectionInfo = propertiesProvider.loadDatabaseProps()
 
         return DataSourceBuilder
             .create()

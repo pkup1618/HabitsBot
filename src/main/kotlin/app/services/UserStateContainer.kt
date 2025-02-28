@@ -1,5 +1,7 @@
 package app.services
 
+import app.UserState
+
 class UserStateContainer {
     var userState: UserState = UserState.UNNECESSARY
 

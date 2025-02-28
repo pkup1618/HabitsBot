@@ -1,7 +1,6 @@
-package app.services
+package app
 
-import app.Habit
-import app.TelegramBot
+import app.services.JdbcOperationsService
 import jakarta.annotation.PostConstruct
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler
@@ -12,7 +11,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 //todo можно переделать через спринговый создатель тасков
 
 @Component
-class NotificationSender @Autowired constructor(
+class NotificationScheduler @Autowired constructor(
     private val threadPoolTaskScheduler: ThreadPoolTaskScheduler,
     private val jdbcOperationsService: JdbcOperationsService,
     private val telegramBot: TelegramBot

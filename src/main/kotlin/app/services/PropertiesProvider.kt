@@ -7,7 +7,7 @@ import java.util.*
 
 
 @Service
-class PropertiesService {
+class PropertiesProvider {
     private fun getPropsFromFile(propsDir: String): Properties {
         val properties = Properties()
 

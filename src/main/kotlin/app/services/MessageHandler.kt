@@ -1,9 +1,10 @@
 package app.services
 
+import app.BotCommands
 import app.ChatMember
 import app.Habit
 import app.TelegramBot
-import app.services.UserState.*
+import app.UserState.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -28,20 +29,20 @@ class MessageHandler @Autowired constructor(
     override fun run() {
         while (true) {
             if (telegramBot.receivedUpdates.isNotEmpty()) {
-                val thread = Thread { processMessage(telegramBot.receivedUpdates.poll()) }
+                val thread = Thread {
+                    val update = telegramBot.receivedUpdates.poll()
+
+                    if (update.hasCallbackQuery())
+                        processInline(update)
+                    else if (update.hasMessage() && update.message.isCommand)
+                        processCommand(update)
+                    else (processMultiformTask(update))
+                }
                 thread.start()
 
                 sleep(500)
             }
         }
-    }
-
-    private fun processMessage(update: Update) {
-        if (update.hasCallbackQuery())
-            processInline(update)
-        else if (update.hasMessage() && update.message.isCommand)
-            processCommand(update)
-        else (processMultiformTask(update))
     }
 
     private fun processInline(update: Update) {
